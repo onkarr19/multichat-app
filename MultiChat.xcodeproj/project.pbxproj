@@ -6,23 +6,32 @@
 	objectVersion = 56;
 	objects = {
 
+/* Begin PBXFileReference section */
+		961B0DDA29A007420070A518 /* Server.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = Server.java; sourceTree = "<group>"; };
+		961B0DDB29A007660070A518 /* Client.java */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.java; path = Client.java; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
 /* Begin PBXGroup section */
 		961B0DCF29A006400070A518 = {
 			isa = PBXGroup;
 			children = (
+				961B0DDA29A007420070A518 /* Server.java */,
+				961B0DDB29A007660070A518 /* Client.java */,
 			);
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 /* End PBXGroup section */
 
 /* Begin PBXLegacyTarget section */
 		961B0DD429A006410070A518 /* MultiChat */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION)";
+			buildArgumentsString = "$(TARGETNAME)";
 			buildConfigurationList = 961B0DD729A006410070A518 /* Build configuration list for PBXLegacyTarget "MultiChat" */;
 			buildPhases = (
 			);
-			buildToolPath = /usr/bin/make;
+			buildToolPath = /usr/bin/java;
+			buildWorkingDirectory = "";
 			dependencies = (
 			);
 			name = MultiChat;
