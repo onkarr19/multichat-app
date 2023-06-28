@@ -1,60 +1,104 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Scanner;
 
 public class Client {
-	public static void main(String[] args) {
-		final Socket clientSocket;
-		final BufferedReader in;
-		final PrintWriter out;
-		final Scanner sc = new Scanner(System.in);
-		
-		
-		try {
-			clientSocket = new Socket("127.0.0.1", 5000);
-			
-			out = new PrintWriter(clientSocket.getOutputStream());
-			in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			
-			Thread sender = new Thread(new Runnable() {
-				String message;
-				@Override
-				public void run() {
-					while (true) {
-						message = sc.nextLine();
-						out.println(message);
-						out.flush();
-					}
-				}
-			});
-			
-			sender.start();
-			
-			
-			Thread receiver = new Thread(new Runnable() {
-				String message;
-				@Override
-				public void run() {
-					try {
-						message = in.readLine();
-						while (message!=null) {
-							System.out.println("Server: " + message);
-							message = in.readLine();
-						}
-						System.out.println("Out of Service...");
-						out.close();
-						clientSocket.close();
-					} catch (Exception e) {
-							e.printStackTrace();
-					}
-				}
-			});
-			
-			receiver.start();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-	}
+    private Socket socket;
+    private BufferedReader reader;
+    private PrintWriter writer;
+
+    public static void main(String[] args) {
+
+        int port = 5001;
+        String serverIP = "localhost";
+
+        if (args.length == 0) {
+        } else if (args.length == 1) {
+            port = Integer.parseInt(args[0]);
+        } else if (args.length == 2) {
+            serverIP = args[0];
+            port = Integer.parseInt(args[1]);
+        } else {
+            System.out.println("Usage: java Client <server-ip> <port>");
+            System.out.println("default: localhost 5001");
+            System.exit(1);
+        }
+
+        System.out.println("Using server IP " + serverIP + " and port " + port);
+
+        try {
+            Client client = new Client();
+            client.start(serverIP, port);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid port number");
+            System.exit(1);
+        }
+
+        // Client client = new Client();
+        // client.start("localhost", 5001);
+    }
+
+    public void start(String serverIP, int port) {
+        try {
+            socket = new Socket(serverIP, port);
+            System.out.println("Connected to server on port " + port);
+
+            reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            writer = new PrintWriter(socket.getOutputStream(), true);
+
+            Thread readThread = new Thread(this::readLoop);
+            Thread writeThread = new Thread(this::writeLoop);
+
+            readThread.start();
+            writeThread.start();
+
+            readThread.join();
+            writeThread.join();
+        } catch (IOException | InterruptedException e) {
+            // e.printStackTrace();
+            System.out.println("Failed to connect to server on port " + port);
+            System.out.println("Make sure the server is running and try again");
+        }
+    }
+
+    private void readLoop() {
+        try {
+            String message;
+            while ((message = reader.readLine()) != null) {
+                System.out.println(message);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+    }
+
+    private void writeLoop() {
+        BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            String message;
+            while ((message = consoleReader.readLine()) != null) {
+                writer.println(message);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+    }
+
+    private void close() {
+        try {
+            reader.close();
+            writer.close();
+            socket.close();
+            System.out.println("Disconnected from server");
+            System.exit(0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
